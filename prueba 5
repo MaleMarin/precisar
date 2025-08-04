@@ -1,0 +1,407 @@
+    import React, { useState } from 'react';
+
+    // Datos de internacionalización
+    const i18n = {
+      es: {
+        'language-code': 'es',
+        'language-name': 'Español',
+        'label-c': 'Consumo de Información', // Categoría 1
+        'label-m': 'Interacción Social',    // Categoría 2
+        'label-y': 'Privacidad y Seguridad', // Categoría 3
+        'dilemma-intro-title': 'Ecos en la Red: Tu Presencia Consciente', // Título Actualizado
+        'dilemma-intro-text': 'Cada interacción digital teje un camino. Aquí, desvelarás los hilos invisibles de la red, explorando decisiones que forjan tu presencia y moldean el futuro digital con sabiduría.',
+        'dilemma-intro-button': 'Comenzar Desafío',
+        slider: 'Nível de Complexidade',
+        title: 'Explorador de Dilemas Digitales',
+        'start-intro': 'Precisar le invita a reflexionar sobre los desafíos y oportunidades de la cultura digital.',
+        'start-button': 'Iniciar Explorador',
+        'start-cta': 'Pressione iniciar cuando esté listo.',
+        'credits-back': 'Voltar',
+        'explorer-intro': 'Seleccione una categoría o ajuste el nivel de complejidad para explorar los dilemas.',
+        'no-dilemas-found': 'No se encontraron dilemas para los filtros seleccionados.',
+      },
+      en: {
+        'language-code': 'en',
+        'language-name': 'English',
+        'label-c': 'Information Consumption',
+        'label-m': 'Social Interaction',
+        'label-y': 'Privacy & Security',
+        'dilemma-intro-title': 'Explore Digital Dilemmas',
+        'dilemma-intro-text': 'Face everyday situations in the digital world. Reflect, analyze, and develop your critical thinking to navigate online better.',
+        'dilemma-intro-button': 'Start Challenge',
+        slider: 'Complexity Level',
+        title: 'Digital Dilemmas Explorer',
+        'start-intro': 'Precisar invites you to reflect on the challenges and opportunities of digital culture.',
+        'start-button': 'Start Explorer',
+        'start-cta': 'Press start when ready.',
+        'credits-back': 'Back',
+        'explorer-intro': 'Select a category or adjust the complexity level to explore the dilemmas.',
+        'no-dilemmas-found': 'No dilemmas found for the selected filters.',
+      },
+    };
+
+    // Componente para o logo da DensityDesign (SVG inline)
+    const DensityDesignLogo = () => (
+      <svg viewBox="0 0 100 100" className="w-24 h-24 mx-auto mb-2">
+        <path d="M50 0 L100 25 L100 75 L50 100 L0 75 L0 25 Z" fill="#333" />
+        <text x="50" y="50" textAnchor="middle" fill="#FFF" fontSize="20" fontWeight="bold" dy=".3em">DEN</text>
+        <text x="50" y="65" textAnchor="middle" fill="#FFF" fontSize="20" fontWeight="bold" dy=".3em">SITY</text>
+        <text x="50" y="80" textAnchor="middle" fill="#FFF" fontSize="20" fontWeight="bold" dy=".3em">GN+</text>
+      </svg>
+    );
+
+    // Datos de dilemas (EJEMPLOS - Precisar debe substituí-los por conteúdo real)
+    const allDilemmas = [
+      { id: 'd1', title: 'La Noticia Viral', description: 'Recebes uma notícia impactante por WhatsApp que não parece real. ¿Qué haces antes de compartirla?', category: 'c', complexity: 0.6 },
+      { id: 'd2', title: 'La Publicidad Personalizada', description: 'Notas que os anuncios nas tuas redes sociais são demasiado específicos. Como achas que obtêm essa informação?', category: 'c', complexity: 0.7 },
+      { id: 'd3', title: 'O Influenciador Enganador', description: 'Um influenciador que segues promociona um produto milagroso. Como avalias a credibilidade da sua recomendação?', category: 'c', complexity: 0.8 },
+      { id: 'd4', title: 'O Comentário Ofensivo', description: 'Vês um comentario muy agresivo o discriminatorio numa publicación. Qual seria a tua reacción?', category: 'm', complexity: 0.5 },
+      { id: 'd5', title: 'O Pedido de Amizade Desconhecido', description: 'Uma persona que não conheces envia-te um pedido de amizade. ¿Qué consideras antes de lo aceptar?', category: 'm', complexity: 0.6 },
+      { id: 'd6', title: 'O Debate Online', description: 'Estás num debate acalorado online. Como manténs uma comunicación respeitosa e construtiva?', category: 'm', complexity: 0.7 },
+      { id: 'd7', title: 'Permissões da Aplicação', description: 'Una nueva aplicación te pide acceso a tus contactos y ubicación. ¿Qué verificarías antes de conceder las permisos?', category: 'y', complexity: 0.6 },
+      { id: 'd8', title: 'Contraseña Débil', description: 'Usas la misma contraseña para varias contas. ¿Por qué es un riesgo y como lo mejorarias?', category: 'y', complexity: 0.5 },
+      { id: 'd9', title: 'Phishing por E-mail', description: 'Recebes um e-mail do teu banco a pedir para atualizares os teus dados. Como verificarias si es legítimo?', category: 'y', complexity: 0.7 },
+      { id: 'd10', title: 'O Desafío Viral Perigoso', description: 'Um "challenge" viral no TikTok parece divertido, mas arriscado. ¿Cómo decides si participas o no?', category: 'm', complexity: 0.8 },
+      { id: 'd11', title: 'Noticias Generadas por IA', description: 'Te encuentras com um artículo de noticias que suena un poco "extraño". ¿Cómo podrías sospeitar que fue generado por IA?', category: 'c', complexity: 0.9 },
+      { id: 'd12', title: 'Datos en la Nuvem Pública', description: 'Guardas documentos importantes en un servicio de almacenamiento en la nube. ¿Qué precauciones tomas con la privacidad?', category: 'y', complexity: 0.9 },
+    ];
+
+
+    // Componente principal da aplicação
+    function App() {
+      // Estado para controlar o ecrã atual: 'start', 'dilema_intro', 'explorer'
+      const [screen, setScreen] = useState('start');
+      // Estado para o idioma atual
+      const [language, setLanguage] = useState('es'); // Por defeito em espanhol
+      // Estado para o valor do slider (0 a 1, mapeado para o nível de complexidade)
+      const [sliderValue, setSliderValue] = useState(0.5);
+      // Estado para as categorias ativas (c, m, y)
+      const [activeCategories, setActiveCategories] = useState(['c', 'm', 'y']); // Todas ativas por defeito
+
+      // Função para obter o texto traduzido
+      const t = (key) => i18n[language][key] || key;
+
+      // Filtrar dilemas com base nas categorias ativas e no valor do slider
+      const filteredDilemmas = allDilemmas.filter(dilemma => {
+        const isCategoryActive = activeCategories.includes(dilemma.category);
+        // O sliderValue (0-1) é comparado com a 'complexity' do dilema.
+        // Dilemas com 'complexity' menor ou igual ao sliderValue são mostrados.
+        const isComplexityLevelMet = dilemma.complexity <= sliderValue + 0.1; // Pequena margem para incluir mais
+
+        return isCategoryActive && isComplexityLevelMet;
+      }).sort((a, b) => a.title.localeCompare(b.title)); // Ordenar alfabeticamente
+
+      // Função para lidar com o início a partir do ecrã de início
+      const handleStart = () => {
+        setScreen('dilema_intro'); // Ir para o ecrã de introdução de dilemas
+      };
+
+      // Função para lidar com o início da exploração após a introdução
+      const handleDilemmaIntroConfirm = () => {
+        setScreen('explorer'); // Mover para o ecrã do explorador
+      };
+
+      // Função para voltar para o ecrã de início ou anterior
+      const goBack = () => {
+        if (screen === 'explorer') {
+          setScreen('dilema_intro'); // Do explorador, voltar para a introdução de dilemas
+        } else {
+          setScreen('start'); // Da introdução de dilemas, voltar para o início
+        }
+      };
+
+      // Função para lidar com o clique nos botões de categoria (C, M, Y)
+      const handleCategoryToggle = (category) => {
+        setActiveCategories(prevCategories => {
+          if (prevCategories.includes(category)) {
+            // Se a categoria já estiver ativa, removemo-la (desativar)
+            const newCategories = prevCategories.filter(cat => cat !== category);
+            return newCategories.length > 0 ? newCategories : ['c', 'm', 'y']; // Se desativar todas, ativar todas
+          } else {
+            // Se a categoria não estiver ativa, adicionamo-la (ativar)
+            return [...prevCategories, category];
+          }
+        });
+      };
+
+      return (
+        <div className="min-h-screen bg-white text-gray-900 flex flex-col items-center justify-center p-4 font-montserrat">
+          {/* Carregamento do Tailwind CSS */}
+          <script src="https://cdn.tailwindcss.com"></script>
+          {/* Configuração da fonte Montserrat */}
+          <style>
+            {`
+              @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+              body { font-family: 'Montserrat', sans-serif; }
+
+              /* Estilos básicos para as páginas e transições */
+              .page {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+                transition: opacity 0.5s ease-in-out;
+                opacity: 0;
+                pointer-events: none;
+              }
+              .page.visible {
+                opacity: 1;
+                pointer-events: auto;
+              }
+              .page-flip {
+                /* Isto simula a transição de 'flip' se desejado, embora com opacidade seja mais simples */
+              }
+
+              /* Estilos para os botões de navegação */
+              #buttons-top, #buttons-bottom {
+                position: absolute;
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                padding: 1rem;
+                z-index: 10;
+              }
+              #buttons-top { top: 0; }
+              #buttons-bottom { bottom: 0; }
+
+              #buttons-top button, #buttons-bottom button {
+                background-color: #f0f0f0; /* Lighter gray for buttons */
+                color: #333; /* Darker text for contrast */
+                padding-left: 1rem;
+                padding-right: 1rem;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+                border-radius: 9999px; /* rounded-full */
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+                transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+                transition-duration: 200ms;
+                font-size: 0.875rem; /* text-sm */
+              }
+              #buttons-top button:hover, #buttons-bottom button:hover {
+                background-color: #e0e0e0; /* Even lighter gray on hover */
+              }
+              #buttons-top .language-select {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem; /* space-x-2 */
+              }
+              #buttons-top .language-select select {
+                background-color: #f0f0f0; /* Lighter gray for select */
+                color: #333; /* Darker text for select */
+                padding: 0.25rem;
+                border-radius: 0.375rem; /* rounded-md */
+                outline: none;
+              }
+              #buttons-top .language-select select:focus {
+                ring: 2px;
+                ring-color: #f59e0b; /* yellow-500 */
+              }
+              #buttons-bottom > div {
+                display: flex;
+                gap: 0.5rem; /* space-x-2 */
+              }
+              #buttons-bottom button label {
+                font-size: 0.75rem; /* text-xs */
+              }
+              #slider-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+              }
+              #slider-input {
+                width: 8rem; /* w-32 */
+                height: 0.5rem; /* h-2 */
+                border-radius: 0.5rem; /* rounded-lg */
+                -webkit-appearance: none;
+                appearance: none;
+                cursor: pointer;
+                background-color: #e0e0e0; /* Light gray for slider track */
+              }
+              #slider-input::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 1rem; /* w-4 */
+                height: 1rem; /* h-4 */
+                border-radius: 9999px; /* rounded-full */
+                background-color: #f59e0b; /* yellow-500 */
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+              }
+              #slider-input::-moz-range-thumb {
+                width: 1rem; /* w-4 */
+                height: 1rem; /* h-4 */
+                border-radius: 9999px; /* rounded-full */
+                background-color: #f59e0b; /* yellow-500 */
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+              }
+              .button-text {
+                font-size: 0.75rem; /* text-xs */
+                color: #4b5563; /* gray-600 */
+                margin-top: 0.25rem;
+              }
+
+              /* Estilos para os botões coloridos (Ciano, Magenta, Amarelo) */
+              .cyan { background-color: #00bcd4; color: #fff; } /* A shade of blue from the image */
+              .cyan:hover { background-color: #00acc1; }
+              .magenta { background-color: #e91e63; color: #fff; } /* A shade of red from the image */
+              .magenta:hover { background-color: #c2185b; }
+              .yellow { background-color: #ffeb3b; color: #333; } /* A shade of yellow from the image */
+              .yellow:hover { background-color: #fdd835; }
+
+              /* Estilo para os botões de categoria ativos */
+              .category-active {
+                box-shadow: 0 0 0 2px #f59e0b; /* Destacar quando estão ativos */
+              }
+
+              /* Espaço reservado para a imagem do título */
+              .title-image-placeholder {
+                width: 16rem; /* w-64 */
+                height: auto;
+                max-width: 100%;
+              }
+
+              /* Estilos para os cartões de dilema */
+              .dilemma-card {
+                background-color: #f8f8f8; /* Slightly off-white for cards */
+                padding: 1rem;
+                border-radius: 0.5rem; /* rounded-lg */
+                box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-lg */
+                margin-bottom: 1rem;
+                text-align: left;
+                width: 100%;
+                max-width: 24rem; /* max-w-sm */
+              }
+              .dilemma-card h3 {
+                font-size: 1.25rem; /* text-xl */
+                font-weight: 600; /* font-semibold */
+                margin-bottom: 0.5rem;
+                color: #2196f3; /* A shade of blue for titles */
+              }
+              .dilemma-card p {
+                color: #424242; /* Darker gray for text */
+                font-size: 0.875rem; /* text-sm */
+              }
+            `}
+          </style>
+
+          {/* Contenedor principal da aplicação */}
+          <div className="relative w-full h-screen max-w-full overflow-hidden bg-white">
+            {/* Canvas - Mantido como elemento de fondo se necesario para o design original */}
+            <canvas id="canvas" className="absolute inset-0 w-full h-full bg-transparent"></canvas>
+
+            {/* --- Ecrã EXPLORADOR (Aplicação Principal) --- */}
+            <div id="page-explorer" className={`page ${screen === 'explorer' ? 'visible' : ''}`}>
+              <nav id="buttons-top" className="top-0">
+                <div className="language-select">
+                  <select
+                    id="select-language"
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                  >
+                    <option value="es">{i18n.es['language-name']}</option>
+                    <option value="en">{i18n.en['language-name']}</option>
+                  </select>
+                  <button data-i18n="language-code">{t('language-code')}</button>
+                </div>
+                <button onClick={goBack} data-i18n="calibration">{t('credits-back')}</button>
+              </nav>
+
+              {/* Contenedor dos cartões de dilema */}
+              <div className="flex-grow overflow-y-auto w-full max-w-2xl p-4 mt-16 mb-24">
+                <p className="text-center text-lg mb-6 text-gray-700">{t('explorer-intro')}</p>
+                {filteredDilemmas.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {filteredDilemmas.map(dilemma => (
+                      <div key={dilemma.id} className="dilemma-card">
+                        <h3>{dilemma.title}</h3>
+                        <p>{dilemma.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500 mt-10">{t('no-dilemmas-found')}</p>
+                )}
+              </div>
+
+              <nav id="buttons-bottom" className="bottom-0">
+                <div>
+                  <button
+                    className={`cyan ${activeCategories.includes('c') ? 'category-active' : ''}`}
+                    onClick={() => handleCategoryToggle('c')}
+                  >
+                    <label data-i18n="label-c">{t('label-c')}</label>
+                  </button>
+                  <button
+                    className={`magenta ${activeCategories.includes('m') ? 'category-active' : ''}`}
+                    onClick={() => handleCategoryToggle('m')}
+                  >
+                    <label data-i18n="label-m">{t('label-m')}</label>
+                  </button>
+                  <button
+                    className={`yellow ${activeCategories.includes('y') ? 'category-active' : ''}`}
+                    onClick={() => handleCategoryToggle('y')}
+                  >
+                    <label data-i18n="label-y">{t('label-y')}</label>
+                  </button>
+                </div>
+
+                <div id="slider-section">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={sliderValue}
+                    onChange={(e) => setSliderValue(parseFloat(e.target.value))}
+                    id="slider-input"
+                  />
+                  <label data-i18n="slider" className="button-text">{t('slider')}</label>
+                </div>
+              </nav>
+            </div>
+
+            {/* --- Ecrã de INÍCIO --- */}
+            <div id="page-start" className={`page ${screen === 'start' ? 'visible' : ''} bg-white`}>
+              <button
+                onClick={handleStart}
+                className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+                data-i18n="start-button"
+                id="button-start"
+              >
+                {t('start-button')}
+              </button>
+            </div>
+
+            {/* --- Ecrã de INTRODUÇÃO DE DILEMAS (antes CALIBRAÇÃO) --- */}
+            <div id="page-dilemma-intro" className={`page ${screen === 'dilemma_intro' ? 'visible' : ''} bg-white`}>
+              <div className="inner text-center max-w-xs mx-auto">
+                <h2 className="text-3xl font-bold mb-4 text-blue-700">{t('dilemma-intro-title')}</h2>
+                <p className="text-lg mb-6 text-gray-700" data-i18n="dilemma-intro-text">{t('dilemma-intro-text')}</p>
+                <button
+                  onClick={handleDilemmaIntroConfirm}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+                  data-i18n="dilemma-intro-button"
+                  id="button-calibrate"
+                >
+                  {t('dilemma-intro-button')}
+                </button>
+              </div>
+              {/* Nuevo SVG de flujo abstracto con colores de la imagen (solo formas) */}
+              <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 opacity-50 z-0" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                {/* Formas de la imagen con colores ajustados */}
+                <circle cx="50" cy="50" r="40" fill="#00bcd4" opacity="0.7"/> {/* Teal/Cyan */}
+                <circle cx="150" cy="70" r="35" fill="#ffeb3b" opacity="0.7"/> {/* Yellow */}
+                <path d="M 30 120 Q 100 180, 170 120 L 150 100 Q 100 160, 50 100 Z" fill="#e91e63" opacity="0.7"/> {/* Red organic shape */}
+                <circle cx="70" cy="140" r="25" fill="#4caf50" opacity="0.7"/> {/* Green */}
+                <circle cx="170" cy="30" r="20" fill="#2196f3" opacity="0.7"/> {/* Blue */}
+              </svg>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    export default App;
+    
