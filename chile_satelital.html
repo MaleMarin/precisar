@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa satelital de Chile</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+#map{position:fixed;inset:0;z-index:0;}
+.leaflet-container{background:#0f1f35 !important;}
+.city-label{color:#fff;font-weight:bold;font-size:14px;line-height:1;white-space:nowrap;text-shadow:0 0 3px #000,0 0 6px #000,0 0 9px rgba(0,0,0,.7);transform:translate(8px,-10px);pointer-events:none;opacity:1;}
+.attribution{position:fixed;right:10px;bottom:8px;z-index:1;font:12px/1.2 monospace;background:rgba(0,0,0,.55);color:#fff;padding:4px 6px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div id="map" aria-label="Mapa satelital de Chile"></div>
+<div class="attribution">Imagery © Esri • OSM & contributors</div>
+<script>
+const map = L.map('map',{
+  zoomControl:false,
+  attributionControl:false,
+  dragging:false,
+  scrollWheelZoom:false,
+  doubleClickZoom:false,
+  boxZoom:false,
+  keyboard:false,
+  tap:false,
+  inertia:false
+  // Para reactivar interacción cambia dragging:true y scrollWheelZoom:true
+});
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+  maxZoom:18,
+  noWrap:true
+}).addTo(map);
+
+const maxBounds = L.latLngBounds([[-56.5,-83.5],[-16.2,-65.0]]);
+map.setMaxBounds(maxBounds);
+
+map.fitBounds([[-54.8,-76.5],[-18.8,-68.5]]);
+
+const capitals = [
+  {n:'Arica',        lat:-18.478, lon:-70.312},
+  {n:'Iquique',      lat:-20.213, lon:-70.151},
+  {n:'Antofagasta',  lat:-23.650, lon:-70.398},
+  {n:'Copiapó',     lat:-27.366, lon:-70.332},
+  {n:'La Serena',    lat:-29.904, lon:-71.248},
+  {n:'Valparaíso',  lat:-33.045, lon:-71.619},
+  {n:'Santiago',     lat:-33.457, lon:-70.650},
+  {n:'Rancagua',     lat:-34.170, lon:-70.744},
+  {n:'Talca',        lat:-35.423, lon:-71.657},
+  {n:'Chillán',       lat:-36.606, lon:-72.103},
+  {n:'Concepción',  lat:-36.826, lon:-73.049},
+  {n:'Temuco',       lat:-38.735, lon:-72.591},
+  {n:'Valdivia',     lat:-39.819, lon:-73.245},
+  {n:'Puerto Montt', lat:-41.471, lon:-72.942},
+  {n:'Coyhaique',    lat:-45.575, lon:-72.066},
+  {n:'Punta Arenas', lat:-53.163, lon:-70.917}
+];
+
+capitals.forEach(c => {
+  L.marker([c.lat, c.lon], {
+    icon: L.divIcon({className:'', html:`<div class="city-label">${c.n}</div>`}),
+    interactive:false
+  }).addTo(map);
+});
+</script>
+</body>
+</html>
